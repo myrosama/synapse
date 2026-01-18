@@ -43,7 +43,11 @@ import {
     getHint,
     generateFeedback,
     saveSession,
+    getStudentInitialQuestion,
+    getStudentFollowUp,
+    evaluateVoiceSession,
 } from '@/lib/api';
+import { VoiceChat, ChatMessage } from '@/components/voice/voice-chat';
 import { Topic, Lesson, LanguageLevel, TopicCategory, QAItem, Scores, Correction } from '@/lib/types';
 import { cn, getScoreColor, getLevelColor } from '@/lib/utils';
 
@@ -130,22 +134,81 @@ export default function LearnPage() {
         }
     };
 
-    // Step 3: Teach-back handlers
-    const handleSubmitExplanation = async () => {
-        if (!learnState.userExplanation || learnState.userExplanation.length < 20) {
-            toast.error('Please write a longer explanation (at least 20 characters).');
-            return;
+    // Step 3: Voice Teaching handlers
+    const [voiceMessages, setVoiceMessages] = useState<ChatMessage[]>([]);
+    const [studentQuestion, setStudentQuestion] = useState('');
+    const [isAIProcessing, setIsAIProcessing] = useState(false);
+    const [teachingComplete, setTeachingComplete] = useState(false);
+
+    // Load initial student question when entering Step 3
+    useEffect(() => {
+        if (learnState.step === 3 && !studentQuestion && learnState.topicId) {
+            loadInitialQuestion();
         }
-        setLoading(true);
+    }, [learnState.step, learnState.topicId]);
+
+    const loadInitialQuestion = async () => {
+        setIsAIProcessing(true);
         try {
-            await submitExplanation(learnState.userExplanation);
-            updateLearnState({ currentQuestionIndex: 0, qaTranscript: [] });
-            nextStep();
-        } catch (error) {
-            toast.error('Failed to submit explanation.');
+            const question = await getStudentInitialQuestion(learnState.topicId || '');
+            setStudentQuestion(question);
         } finally {
-            setLoading(false);
+            setIsAIProcessing(false);
         }
+    };
+
+    const handleVoiceResponse = async (response: string) => {
+        if (!response.trim()) return;
+
+        setIsAIProcessing(true);
+
+        // Build transcript from messages
+        const transcript = voiceMessages.map(m => ({
+            role: m.role === 'student' ? 'student' as const : 'user' as const,
+            content: m.content
+        }));
+
+        try {
+            const result = await getStudentFollowUp(transcript, response);
+
+            // Add the AI's follow-up question
+            const newStudentMessage: ChatMessage = {
+                id: `student-${Date.now()}`,
+                role: 'student',
+                content: result.question,
+                timestamp: new Date(),
+            };
+
+            setVoiceMessages(prev => [...prev, newStudentMessage]);
+
+            // Store the user's explanation
+            const currentExplanation = (learnState.userExplanation || '') + '\n' + response;
+            updateLearnState({ userExplanation: currentExplanation.trim() });
+
+            if (result.understood) {
+                setTeachingComplete(true);
+                // Wait a moment then proceed to feedback
+                setTimeout(() => {
+                    goToStep(5); // Skip questions step, go directly to feedback
+                }, 2000);
+            }
+        } catch (error) {
+            toast.error('Failed to get AI response. Please try again.');
+        } finally {
+            setIsAIProcessing(false);
+        }
+    };
+
+    const handleRequestHint = async () => {
+        const hint = await getHint(0);
+        toast.info(hint);
+    };
+
+    const handleRetryTeaching = () => {
+        setVoiceMessages([]);
+        setStudentQuestion('');
+        setTeachingComplete(false);
+        loadInitialQuestion();
     };
 
     // Step 4: Q&A handlers
@@ -484,7 +547,7 @@ export default function LearnPage() {
                     </motion.div>
                 )}
 
-                {/* Step 3: Teach-back */}
+                {/* Step 3: Voice Teaching */}
                 {learnState.step === 3 && (
                     <motion.div
                         key="teach"
@@ -492,79 +555,78 @@ export default function LearnPage() {
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -20 }}
                     >
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Your Turn to Teach</CardTitle>
-                                <p className="text-sm text-slate-400 mt-1">
-                                    Explain this topic like you&apos;re teaching a student seeing it for the first time.
-                                </p>
+                        <Card className="overflow-hidden">
+                            <CardHeader className="border-b border-white/10">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <CardTitle className="flex items-center gap-2">
+                                            🎤 Your Turn to Teach
+                                        </CardTitle>
+                                        <p className="text-sm text-slate-400 mt-1">
+                                            Explain by speaking. The AI student will ask questions until they understand.
+                                        </p>
+                                    </div>
+                                    {teachingComplete && (
+                                        <Badge variant="success">Complete!</Badge>
+                                    )}
+                                </div>
                             </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="relative">
-                                    <textarea
-                                        value={learnState.userExplanation || ''}
-                                        onChange={(e) => updateLearnState({ userExplanation: e.target.value })}
-                                        placeholder="Start your explanation here... Try to include 1 clear rule and 2 examples."
-                                        className="w-full h-48 rounded-xl border border-white/10 bg-[#101B2D] p-4 text-white placeholder:text-slate-500 resize-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 focus:outline-none"
+                            <CardContent className="p-0">
+                                {isAIProcessing && !studentQuestion ? (
+                                    <div className="flex items-center justify-center py-20">
+                                        <div className="text-center">
+                                            <div className="animate-spin h-8 w-8 border-2 border-cyan-400 border-t-transparent rounded-full mx-auto mb-4" />
+                                            <p className="text-slate-400">AI student is preparing a question...</p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <VoiceChat
+                                        studentQuestion={studentQuestion}
+                                        onUserResponse={handleVoiceResponse}
+                                        onRequestHint={handleRequestHint}
+                                        isProcessing={isAIProcessing}
+                                        className="h-[500px]"
                                     />
-                                    <div className="absolute bottom-3 right-3 text-xs text-slate-500">
-                                        {(learnState.userExplanation || '').length} characters
-                                    </div>
-                                </div>
+                                )}
+                            </CardContent>
 
-                                {/* Tips */}
-                                <div className="flex items-start gap-2 text-sm text-slate-400">
-                                    <Lightbulb className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" />
-                                    <p>Tip: Use 1 rule + 2 examples. Keep it simple. Anticipate confusion.</p>
-                                </div>
+                            {/* Footer actions */}
+                            <div className="border-t border-white/10 p-4 flex items-center justify-between">
+                                <Button variant="outline" onClick={prevStep}>
+                                    <ArrowLeft className="h-4 w-4 mr-2" />
+                                    Back to Lesson
+                                </Button>
 
-                                {/* Options */}
-                                <div className="space-y-3 pt-4 border-t border-white/10">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm text-white">Strict grammar corrections</span>
-                                        <Switch
-                                            checked={learnState.strictCorrections}
-                                            onCheckedChange={(checked) => updateLearnState({ strictCorrections: checked })}
-                                        />
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm text-white">Harder questions</span>
-                                        <Switch
-                                            checked={learnState.harderQuestions}
-                                            onCheckedChange={(checked) => updateLearnState({ harderQuestions: checked })}
-                                        />
-                                    </div>
+                                <div className="flex gap-2">
+                                    <Button variant="ghost" size="sm" onClick={handleRetryTeaching}>
+                                        <RotateCcw className="h-4 w-4 mr-2" />
+                                        Start Over
+                                    </Button>
+                                    {teachingComplete && (
+                                        <Button onClick={() => goToStep(5)}>
+                                            See Feedback
+                                            <ArrowRight className="h-4 w-4 ml-2" />
+                                        </Button>
+                                    )}
                                 </div>
+                            </div>
+                        </Card>
 
-                                {/* Key points accordion */}
-                                <details className="group">
-                                    <summary className="flex items-center gap-2 cursor-pointer text-sm text-cyan-400 hover:text-cyan-300">
-                                        <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
-                                        Show key points for reference
-                                    </summary>
-                                    <div className="mt-3 pl-6 space-y-2 text-sm text-slate-400">
+                        {/* Key points reference */}
+                        <Card className="mt-4">
+                            <details className="group">
+                                <summary className="flex items-center gap-2 cursor-pointer p-4 text-sm text-cyan-400 hover:text-cyan-300">
+                                    <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
+                                    Show key points for reference
+                                </summary>
+                                <CardContent className="pt-0 pb-4">
+                                    <div className="space-y-2 text-sm text-slate-400">
                                         {learnState.lesson?.sections.map((section, i) => (
                                             <p key={i}>• {section.heading}</p>
                                         ))}
                                     </div>
-                                </details>
-
-                                <div className="flex gap-3 pt-4">
-                                    <Button variant="outline" onClick={prevStep}>
-                                        <ArrowLeft className="h-4 w-4 mr-2" />
-                                        Back
-                                    </Button>
-                                    <Button
-                                        onClick={handleSubmitExplanation}
-                                        disabled={loading || (learnState.userExplanation || '').length < 20}
-                                        loading={loading}
-                                        className="flex-1"
-                                    >
-                                        Submit Explanation
-                                        <Send className="h-4 w-4 ml-2" />
-                                    </Button>
-                                </div>
-                            </CardContent>
+                                </CardContent>
+                            </details>
                         </Card>
                     </motion.div>
                 )}
