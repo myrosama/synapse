@@ -20,6 +20,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/lib/store';
+import { RecitoFiring, StampApproval } from '@/components/ui/recito-firing';
+import { HoverExplanation } from '@/components/ui/hover-explanation';
 import {
     grammarExercises,
     getRandomExercises,
@@ -36,6 +38,8 @@ export default function GrammarPage() {
     const [exercises, setExercises] = useState<GrammarError[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [score, setScore] = useState(0);
+    const [showConfetti, setShowConfetti] = useState(false);
+    const [stamp, setStamp] = useState<{ show: boolean; type: 'approved' | 'excellent' | 'perfect' }>({ show: false, type: 'approved' });
 
     const startGame = (gameMode: GameMode, errorType?: string) => {
         let exs: GrammarError[];
@@ -52,10 +56,21 @@ export default function GrammarPage() {
 
     const endGame = () => {
         if (score > exercises.length / 2) {
+            setShowConfetti(true);
             toast.success(`Great job! You scored ${score}/${exercises.length}`);
         }
-        setMode('select');
-        setExercises([]);
+        setTimeout(() => {
+            setMode('select');
+            setExercises([]);
+            setShowConfetti(false);
+        }, 3000);
+    };
+
+    const triggerStamp = () => {
+        const types: ('approved' | 'excellent' | 'perfect')[] = ['approved', 'excellent', 'perfect'];
+        const randomType = types[Math.floor(Math.random() * types.length)];
+        setStamp({ show: true, type: randomType });
+        setTimeout(() => setStamp({ ...stamp, show: false }), 1500);
     };
 
     return (
@@ -349,13 +364,17 @@ function RedPenMode({
                                 <strong>Correct answer:</strong> {current.correctSentence}
                             </p>
 
-                            <div className="flex items-start gap-2 mt-3">
-                                <Lightbulb className="h-4 w-4 text-amber-400 mt-0.5" />
-                                <p className="text-sm text-slate-400">{current.explanation}</p>
-                            </div>
+                            <div className="flex items-center gap-4 mt-3">
+                                <span className="text-sm text-slate-400 flex items-center gap-1.5">
+                                    <Lightbulb className="h-4 w-4 text-amber-400" />
+                                    {current.explanation}
+                                </span>
 
-                            <div className="mt-3 p-2 rounded-lg bg-white/5">
-                                <p className="text-xs text-cyan-400 font-medium">📘 Rule: {current.rule}</p>
+                                <HoverExplanation
+                                    label="View Rule"
+                                    title="Grammar Rule"
+                                    description={current.rule}
+                                />
                             </div>
                         </motion.div>
                     )}

@@ -94,7 +94,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         });
 
         // Apply theme class for Tailwind
-        root.classList.remove('theme-dark', 'theme-light', 'theme-night');
+        root.classList.remove('theme-dark', 'theme-light', 'theme-night', 'theme-oled');
         root.classList.add(`theme-${theme}`);
 
         // Save preference

@@ -19,6 +19,7 @@ import {
     Gamepad2,
     Mic,
     PenTool,
+    Smartphone,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RecitoLogo } from '@/components/ui/recito-logo';
@@ -44,15 +45,17 @@ const themeIcons: Record<Theme, typeof Moon> = {
     dark: Moon,
     light: Sun,
     night: Sparkles,
+    oled: Smartphone,
 };
 
 const themeLabels: Record<Theme, string> = {
     dark: 'Dark',
     light: 'Light',
     night: 'Night',
+    oled: 'OLED',
 };
 
-const themeOrder: Theme[] = ['dark', 'light', 'night'];
+const themeOrder: Theme[] = ['dark', 'light', 'night', 'oled'];
 
 export function Sidebar() {
     const pathname = usePathname();
