@@ -2,7 +2,6 @@
 
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { User, LearnSessionState, Session, Topic } from './types';
-import { mockUser, mockSessions } from './mock-data';
 
 // App state interface
 interface AppState {
@@ -123,7 +122,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     // Load persisted state on mount
     useEffect(() => {
         // Check for saved auth state
-        const savedAuth = localStorage.getItem('synapse_auth');
+        const savedAuth = localStorage.getItem('recito_auth');
         if (savedAuth) {
             try {
                 const user = JSON.parse(savedAuth);
@@ -136,7 +135,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
 
         // Load saved learn state
-        const savedLearnState = localStorage.getItem('synapse_learn_state');
+        const savedLearnState = localStorage.getItem('recito_learn_state');
         if (savedLearnState) {
             try {
                 const learnState = JSON.parse(savedLearnState);
@@ -146,23 +145,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
             }
         }
 
-        // Load mock sessions
-        dispatch({ type: 'SET_SESSIONS', payload: mockSessions });
+        // Sessions are now loaded via API from localStorage, not from mock data
     }, []);
 
     // Persist learn state changes
     useEffect(() => {
         if (state.learnState.step > 1) {
-            localStorage.setItem('synapse_learn_state', JSON.stringify(state.learnState));
+            localStorage.setItem('recito_learn_state', JSON.stringify(state.learnState));
         }
     }, [state.learnState]);
 
     // Persist auth state
     useEffect(() => {
         if (state.user) {
-            localStorage.setItem('synapse_auth', JSON.stringify(state.user));
+            localStorage.setItem('recito_auth', JSON.stringify(state.user));
         } else if (!state.authLoading) {
-            localStorage.removeItem('synapse_auth');
+            localStorage.removeItem('recito_auth');
         }
     }, [state.user, state.authLoading]);
 
@@ -196,8 +194,8 @@ export function useAuth() {
         isLoading: state.authLoading,
         signIn: (user: User) => dispatch({ type: 'SET_USER', payload: user }),
         signOut: () => {
-            localStorage.removeItem('synapse_auth');
-            localStorage.removeItem('synapse_learn_state');
+            localStorage.removeItem('recito_auth');
+            localStorage.removeItem('recito_learn_state');
             dispatch({ type: 'SIGN_OUT' });
         },
     };
@@ -210,7 +208,7 @@ export function useLearnState() {
         updateLearnState: (updates: Partial<LearnSessionState>) =>
             dispatch({ type: 'UPDATE_LEARN_STATE', payload: updates }),
         resetLearnState: () => {
-            localStorage.removeItem('synapse_learn_state');
+            localStorage.removeItem('recito_learn_state');
             dispatch({ type: 'RESET_LEARN_STATE' });
         },
     };

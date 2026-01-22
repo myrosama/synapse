@@ -26,11 +26,11 @@ export default function HelpPage() {
         },
         {
             question: 'What topics are available?',
-            answer: 'Synapse covers Grammar (tenses, conditionals, articles, etc.), Vocabulary (phrasal verbs, academic words, idioms), Speaking (fluency patterns, polite expressions), and Writing (cohesion, formal style, essay structure). Topics are organized by CEFR level from A1 (beginner) to C2 (proficient). We continuously add new content.',
+            answer: 'Recito covers Grammar (tenses, conditionals, articles, etc.), Vocabulary (phrasal verbs, academic words, idioms), Speaking (fluency patterns, polite expressions), and Writing (cohesion, formal style, essay structure). Topics are organized by CEFR level from A1 (beginner) to C2 (proficient). We continuously add new content.',
         },
         {
-            question: 'Can I use Synapse for exam preparation?',
-            answer: 'Yes! Synapse is designed to help with IELTS, TOEFL, SAT, and other English exams. The teach-back method reinforces grammar and vocabulary retention—key for exam success. Select your goal in your profile settings to get relevant topic recommendations.',
+            question: 'Can I use Recito for exam preparation?',
+            answer: 'Yes! Recito is designed to help with IELTS, TOEFL, SAT, and other English exams. The teach-back method reinforces grammar and vocabulary retention—key for exam success. Select your goal in your profile settings to get relevant topic recommendations.',
         },
         {
             question: 'How is my data used?',
@@ -56,7 +56,7 @@ export default function HelpPage() {
                 animate={{ opacity: 1, y: 0 }}
             >
                 <h1 className="text-2xl md:text-3xl font-bold text-white">Help & FAQ</h1>
-                <p className="text-slate-400 mt-1">Learn how Synapse works and get the most out of your sessions.</p>
+                <p className="text-slate-400 mt-1">Learn how Recito works and get the most out of your sessions.</p>
             </motion.div>
 
             {/* FAQ */}
@@ -128,7 +128,7 @@ export default function HelpPage() {
                             </p>
                         </div>
                         <Button variant="outline" asChild>
-                            <a href="mailto:support@synapse.ai">
+                            <a href="mailto:support@recito.ai">
                                 <Mail className="h-4 w-4 mr-2" />
                                 Contact Support
                             </a>
@@ -146,7 +146,7 @@ export default function HelpPage() {
                 <Card>
                     <CardContent className="py-6 text-center">
                         <p className="text-sm text-slate-400">
-                            Synapse is an AI-powered English learning platform using the teach-back method.
+                            Recito is an AI-powered English learning platform using the teach-back method.
                         </p>
                         <p className="text-xs text-slate-500 mt-2">
                             Built for hackathon / demo purposes. Version 1.0.0

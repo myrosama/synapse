@@ -4,9 +4,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Search, Menu, LogOut, Settings, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { SynapseLogo } from '@/components/ui/synapse-logo';
+import { RecitoLogo } from '@/components/ui/recito-logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { useAuth, useSidebar } from '@/lib/store';
 import { useState } from 'react';
 
@@ -38,7 +39,7 @@ export function Topbar() {
                         <Menu className="h-5 w-5" />
                     </button>
                     <Link href="/app" className="lg:hidden">
-                        <SynapseLogo size="sm" />
+                        <RecitoLogo size="sm" />
                     </Link>
                 </div>
 
@@ -55,6 +56,9 @@ export function Topbar() {
 
                 {/* Right side */}
                 <div className="flex items-center gap-3">
+                    {/* Theme Toggle */}
+                    <ThemeToggle className="hidden md:flex" />
+
                     <Button
                         onClick={() => router.push('/app/learn')}
                         size="sm"

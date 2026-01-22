@@ -177,35 +177,50 @@ export async function getStudentFollowUp(
     understood: boolean;
     feedbackNote?: string;
 }> {
-    await randomDelay(800, 1500);
+    await randomDelay(600, 1200);
 
     const exchangeCount = transcript.filter(m => m.role === 'user').length;
+    const wordCount = userResponse.split(' ').length;
 
-    // After 3-5 exchanges, student "understands"
-    if (exchangeCount >= 4) {
+    // Dynamic follow-up questions based on conversation depth
+    const dynamicQuestions = [
+        "Hmm, that's interesting! Can you give me a specific example to help me understand better?",
+        "I think I'm starting to get it. But what would happen in this situation: if I said 'I eat breakfast' vs 'I have eaten breakfast', what's the difference?",
+        "Oh! So the time matters? What about words like 'already' or 'just' - which tense do they go with?",
+        "That makes more sense now. So if I want to talk about my life experiences, which tense should I use?",
+        "Wait, I have another question - can you explain what 'signal words' are? My teacher mentioned them.",
+        "I see! So 'since' and 'for' are different too? Can you explain that?",
+        "This is really helpful! One more thing - what about 'ever' and 'never'? When do I use those?",
+    ];
+
+    // After 6+ exchanges, student understands
+    if (exchangeCount >= 6) {
         return {
-            question: "I understand now! Thank you for explaining. The key is whether the action has a connection to the present moment, right?",
+            question: "Wow, thank you so much! I really understand now. The key is whether the action connects to the present moment, and specific time words tell us which tense to use. This was so helpful! 🎉",
             understood: true,
-            feedbackNote: "Great explanation! You covered the main concept clearly.",
+            feedbackNote: "Excellent teaching! You explained the concept thoroughly with great examples.",
         };
     }
 
-    // Check response quality (simple length heuristic)
-    const responseQuality = userResponse.length > 50 ? 'good' : 'needs_more';
-
-    if (responseQuality === 'needs_more' && exchangeCount < 2) {
+    // If user gives short response, ask for more detail
+    if (wordCount < 15 && exchangeCount < 3) {
         return {
-            question: "Could you explain that with an example? I learn better with examples.",
+            question: "Could you explain that a bit more? Maybe with an example? I learn better with examples.",
             understood: false,
+            feedbackNote: "Try to give more detailed explanations with examples.",
         };
     }
 
-    // Return follow-up question
-    const questionIndex = Math.min(exchangeCount, followUpQuestions.length - 1);
+    // Progress through follow-up questions
+    const questionIndex = Math.min(exchangeCount, dynamicQuestions.length - 1);
+
+    // Check if response quality is good enough to advance understanding
+    const isGoodResponse = wordCount > 20 || userResponse.includes('example') || userResponse.includes('because');
+
     return {
-        question: followUpQuestions[questionIndex],
-        understood: exchangeCount >= 3 && userResponse.length > 80,
-        feedbackNote: exchangeCount >= 2 ? "Good progress! Keep building on this." : undefined,
+        question: dynamicQuestions[questionIndex],
+        understood: false,
+        feedbackNote: isGoodResponse && exchangeCount >= 3 ? "Good explanation! Keep it up." : undefined,
     };
 }
 
@@ -303,66 +318,198 @@ export async function generateFeedback(
     };
 }
 
-// Sessions API
+// Sessions API - localStorage-based
+const SESSIONS_STORAGE_KEY = 'recito_sessions';
+
+function getStoredSessions(): Session[] {
+    if (typeof window === 'undefined') return [];
+    const data = localStorage.getItem(SESSIONS_STORAGE_KEY);
+    return data ? JSON.parse(data) : [];
+}
+
+function saveStoredSessions(sessions: Session[]): void {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(sessions));
+}
+
 export async function fetchSessions(filters?: {
     status?: 'in_progress' | 'completed';
     dateFrom?: string;
     dateTo?: string;
 }): Promise<Session[]> {
-    await randomDelay(400, 800);
+    await randomDelay(200, 400);
 
-    let sessions = [...mockSessions];
+    let sessions = getStoredSessions();
 
     if (filters?.status) {
         sessions = sessions.filter(s => s.status === filters.status);
     }
 
+    // Sort by date, newest first
+    sessions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
     return sessions;
 }
 
 export async function fetchSession(id: string): Promise<Session | null> {
-    await randomDelay(300, 600);
-    return mockSessions.find(s => s.id === id) || mockCompletedSession;
+    await randomDelay(200, 400);
+    const sessions = getStoredSessions();
+    return sessions.find(s => s.id === id) || null;
 }
 
 export async function saveSession(session: Partial<Session>): Promise<Session> {
-    await randomDelay(500, 1000);
-    return {
+    await randomDelay(300, 600);
+
+    const sessions = getStoredSessions();
+    const newSession: Session = {
         ...mockCompletedSession,
         ...session,
-        id: `session-${Date.now()}`,
-        date: new Date().toISOString(),
-        status: 'completed',
+        id: session.id || `session-${Date.now()}`,
+        date: session.date || new Date().toISOString(),
+        status: session.status || 'completed',
     };
+
+    // Check if session exists and update, or add new
+    const existingIndex = sessions.findIndex(s => s.id === newSession.id);
+    if (existingIndex >= 0) {
+        sessions[existingIndex] = newSession;
+    } else {
+        sessions.push(newSession);
+    }
+
+    saveStoredSessions(sessions);
+    return newSession;
 }
 
 export async function deleteSession(id: string): Promise<boolean> {
-    await randomDelay(400, 800);
+    await randomDelay(200, 400);
+    const sessions = getStoredSessions();
+    const filtered = sessions.filter(s => s.id !== id);
+    saveStoredSessions(filtered);
     return true;
 }
 
 export async function deleteAllSessions(): Promise<boolean> {
-    await randomDelay(800, 1200);
+    await randomDelay(300, 500);
+    saveStoredSessions([]);
     return true;
 }
 
-// Auth API (mock)
+// Auth API with localStorage-based user management
+const USERS_STORAGE_KEY = 'recito_users';
+
+interface StoredUser {
+    id: string;
+    name: string;
+    email: string;
+    password: string;
+    level: 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
+    goal: 'IELTS' | 'SAT' | 'Conversation' | 'School' | 'Business';
+    nativeLanguage: string;
+    streakDays: number;
+    totalSessions: number;
+    createdAt: string;
+}
+
+function getStoredUsers(): StoredUser[] {
+    if (typeof window === 'undefined') return [];
+    const data = localStorage.getItem(USERS_STORAGE_KEY);
+    return data ? JSON.parse(data) : [];
+}
+
+function saveStoredUsers(users: StoredUser[]): void {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+}
+
 export async function signIn(email: string, password: string): Promise<User> {
     await randomDelay(800, 1500);
-    if (password.length < 6) {
-        throw new Error('Invalid credentials');
+
+    const users = getStoredUsers();
+    const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+
+    if (!user) {
+        throw new Error('No account found with this email');
     }
-    return mockUser;
+
+    if (user.password !== password) {
+        throw new Error('Invalid password');
+    }
+
+    // Return user without password
+    return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        level: user.level,
+        goal: user.goal,
+        nativeLanguage: user.nativeLanguage,
+        streakDays: user.streakDays,
+        totalSessions: user.totalSessions,
+    };
 }
 
 export async function signUp(name: string, email: string, password: string): Promise<User> {
     await randomDelay(1000, 1800);
+
     if (password.length < 6) {
         throw new Error('Password must be at least 6 characters');
     }
-    return { ...mockUser, name, email };
+
+    if (!name.trim()) {
+        throw new Error('Name is required');
+    }
+
+    if (!email.includes('@')) {
+        throw new Error('Please enter a valid email address');
+    }
+
+    const users = getStoredUsers();
+
+    // Check if email already exists
+    if (users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
+        throw new Error('An account with this email already exists');
+    }
+
+    const newUser: StoredUser = {
+        id: `user-${Date.now()}`,
+        name: name.trim(),
+        email: email.toLowerCase(),
+        password,
+        level: 'B1',
+        goal: 'IELTS',
+        nativeLanguage: 'Not specified',
+        streakDays: 0,
+        totalSessions: 0,
+        createdAt: new Date().toISOString(),
+    };
+
+    users.push(newUser);
+    saveStoredUsers(users);
+
+    // Return user without password
+    return {
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email,
+        level: newUser.level,
+        goal: newUser.goal,
+        nativeLanguage: newUser.nativeLanguage,
+        streakDays: newUser.streakDays,
+        totalSessions: newUser.totalSessions,
+    };
 }
 
 export async function signOut(): Promise<void> {
     await randomDelay(300, 500);
+}
+
+// Admin function to reset all data
+export async function resetAllData(): Promise<void> {
+    await randomDelay(500, 1000);
+    if (typeof window === 'undefined') return;
+    localStorage.removeItem('recito_users');
+    localStorage.removeItem('recito_sessions');
+    localStorage.removeItem('recito_auth');
+    localStorage.removeItem('recito_learn_state');
 }

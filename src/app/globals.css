@@ -44,6 +44,82 @@
   --topbar-height: 64px;
 }
 
+/* Light Theme */
+.theme-light {
+  --background: #f8fafc;
+  --background-surface: #ffffff;
+  --background-elevated: #f1f5f9;
+  --foreground: #0f172a;
+  --foreground-muted: #475569;
+  --foreground-subtle: #64748b;
+  --border: rgba(0, 0, 0, 0.1);
+  --border-strong: rgba(0, 0, 0, 0.15);
+  --primary: #0891b2;
+  --primary-hover: #0e7490;
+  --primary-foreground: #ffffff;
+  --secondary: #7c3aed;
+  --secondary-hover: #6d28d9;
+}
+
+/* Night Theme */
+.theme-night {
+  --background: #000814;
+  --background-surface: #001d3d;
+  --background-elevated: #003566;
+  --foreground: #e2e8f0;
+  --foreground-muted: #94a3b8;
+  --foreground-subtle: #64748b;
+  --border: rgba(255, 255, 255, 0.05);
+  --border-strong: rgba(255, 255, 255, 0.1);
+  --primary: #00ffff;
+  --primary-hover: #00e0e0;
+  --secondary: #ff00ff;
+  --secondary-hover: #e000e0;
+  --glow-primary: rgba(0, 255, 255, 0.4);
+  --glow-secondary: rgba(255, 0, 255, 0.4);
+}
+
+/* OLED Theme - True Black for OLED displays */
+.theme-oled {
+  --background: #000000;
+  --background-surface: #000000;
+  --background-elevated: #0a0a0a;
+  --foreground: #ffffff;
+  --foreground-muted: #a1a1aa;
+  --foreground-subtle: #71717a;
+  --border: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --primary: #22d3ee;
+  --primary-hover: #06b6d4;
+  --secondary: #a855f7;
+  --secondary-hover: #9333ea;
+  --glow-primary: rgba(34, 211, 238, 0.5);
+  --glow-secondary: rgba(168, 85, 247, 0.5);
+}
+
+/* OLED specific overrides for true black */
+.theme-oled body,
+.theme-oled html,
+.theme-oled main,
+.theme-oled aside,
+.theme-oled header,
+.theme-oled .min-h-screen {
+  background-color: #000000 !important;
+}
+
+.theme-oled [class*="bg-slate"],
+.theme-oled [class*="bg-gray"] {
+  background-color: transparent !important;
+  border-color: var(--border) !important;
+}
+
+.theme-oled [class*="card"],
+.theme-oled .rounded-xl,
+.theme-oled .rounded-2xl {
+  background-color: #0a0a0a !important;
+  border-color: var(--border) !important;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -55,6 +131,36 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ========================================
+   CUSTOM TYPOGRAPHY SYSTEM
+   Serif for content, Sans for UI
+   ======================================== */
+
+/* Serif font for content/reading */
+.font-content {
+  font-family: 'Merriweather', Georgia, 'Times New Roman', serif;
+}
+
+/* Sans font for UI elements */
+.font-ui {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Reading mode typography */
+.reading-content {
+  font-family: 'Merriweather', Georgia, serif;
+  font-size: 1.125rem;
+  line-height: 1.8;
+  letter-spacing: 0.01em;
+}
+
+/* Headings in content */
+.content-heading {
+  font-family: 'Merriweather', Georgia, serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 /* Focus rings for accessibility */
@@ -151,4 +257,350 @@ body {
   background: linear-gradient(90deg, var(--background-surface) 25%, var(--background-elevated) 50%, var(--background-surface) 75%);
   background-size: 200% 100%;
   animation: skeleton 1.5s ease-in-out infinite;
+}
+
+/* Gradient text animation */
+@keyframes gradient {
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.animate-gradient {
+  animation: gradient 3s ease infinite;
+}
+
+/* ========================================
+   LIGHT MODE OVERRIDES
+   ======================================== */
+.theme-light {
+  /* Override hardcoded dark backgrounds */
+  --tw-bg-opacity: 1;
+}
+
+/* CRITICAL: Main content area and body */
+.theme-light body,
+.theme-light html {
+  background-color: var(--background) !important;
+}
+
+.theme-light main,
+.theme-light .main-content,
+.theme-light [class*="flex-1"] {
+  background-color: var(--background) !important;
+}
+
+/* Override ALL hardcoded hex backgrounds */
+.theme-light [style*="background"],
+.theme-light [class*="bg-[#0B1220]"],
+.theme-light [class*="bg-[#101B2D]"],
+.theme-light [class*="bg-[#162035]"],
+.theme-light [class*="bg-[#1a2332]"],
+.theme-light [class*="bg-[#111827]"] {
+  background-color: var(--background) !important;
+}
+
+/* App layout wrapper */
+.theme-light .min-h-screen,
+.theme-light [class*="min-h-screen"] {
+  background-color: var(--background) !important;
+}
+
+/* Sidebar */
+.theme-light aside,
+.theme-light [class*="sidebar"] {
+  background-color: var(--background) !important;
+  border-color: var(--border) !important;
+}
+
+.theme-light aside a,
+.theme-light [class*="sidebar"] a {
+  color: var(--foreground) !important;
+}
+
+.theme-light aside a:hover,
+.theme-light [class*="sidebar"] a:hover {
+  background-color: var(--background-elevated) !important;
+}
+
+/* Cards */
+.theme-light [class*="card"],
+.theme-light .bg-slate-800,
+.theme-light .bg-slate-900,
+.theme-light .bg-slate-800\/50,
+.theme-light .bg-slate-900\/50 {
+  background-color: var(--background-surface) !important;
+  border-color: var(--border) !important;
+}
+
+/* Text colors */
+.theme-light .text-white {
+  color: var(--foreground) !important;
+}
+
+.theme-light .text-slate-400,
+.theme-light .text-slate-500 {
+  color: var(--foreground-muted) !important;
+}
+
+.theme-light .text-slate-300 {
+  color: var(--foreground) !important;
+}
+
+/* Inputs */
+.theme-light input,
+.theme-light textarea,
+.theme-light select {
+  background-color: var(--background-surface) !important;
+  border-color: var(--border) !important;
+  color: var(--foreground) !important;
+}
+
+.theme-light input::placeholder,
+.theme-light textarea::placeholder {
+  color: var(--foreground-subtle) !important;
+}
+
+/* Buttons */
+.theme-light button:not([class*="bg-"]):not([class*="gradient"]) {
+  color: var(--foreground) !important;
+}
+
+.theme-light .bg-slate-700,
+.theme-light .bg-slate-800,
+.theme-light .hover\:bg-slate-700:hover,
+.theme-light .hover\:bg-slate-800:hover {
+  background-color: var(--background-elevated) !important;
+}
+
+/* Badges */
+.theme-light [class*="badge"] {
+  background-color: var(--background-elevated) !important;
+}
+
+/* Dropdown menus */
+.theme-light [role="menu"],
+.theme-light [role="listbox"] {
+  background-color: var(--background-surface) !important;
+  border-color: var(--border) !important;
+}
+
+/* Tabs */
+.theme-light [role="tablist"] {
+  background-color: var(--background-elevated) !important;
+}
+
+/* Modal/Dialog backgrounds */
+.theme-light [role="dialog"] {
+  background-color: var(--background-surface) !important;
+}
+
+/* Code blocks and formulas */
+.theme-light pre,
+.theme-light code {
+  background-color: var(--background-elevated) !important;
+  color: var(--foreground) !important;
+}
+
+/* Border overrides */
+.theme-light .border-white\/10,
+.theme-light .border-white\/5,
+.theme-light .border-white\/8 {
+  border-color: var(--border) !important;
+}
+
+/* Hover states */
+.theme-light .hover\:bg-white\/5:hover,
+.theme-light .hover\:bg-white\/10:hover {
+  background-color: var(--background-elevated) !important;
+}
+
+/* Topbar */
+.theme-light header,
+.theme-light nav {
+  background-color: var(--background-surface) !important;
+  border-color: var(--border) !important;
+}
+
+/* Specific component overrides */
+.theme-light .bg-gradient-to-r.from-slate-900,
+.theme-light .bg-gradient-to-b.from-slate-900 {
+  background: var(--background-surface) !important;
+}
+
+/* Canvas and waveform */
+.theme-light canvas {
+  background-color: var(--background-elevated) !important;
+}
+
+/* Streak and activity cards */
+.theme-light [class*="heatmap"],
+.theme-light [class*="streak"] {
+  background-color: var(--background-surface) !important;
+}
+
+/* Avatar backgrounds */
+.theme-light .rounded-full[class*="bg-gradient"] {
+  /* Keep gradient avatars */
+}
+
+/* Leaderboard rows */
+.theme-light [class*="leaderboard"]>div {
+  background-color: var(--background-surface) !important;
+  border-color: var(--border) !important;
+}
+
+/* Quiz and test cards */
+.theme-light [class*="quiz"],
+.theme-light [class*="test"] {
+  background-color: var(--background-surface) !important;
+}
+
+/* Selection highlight */
+.theme-light ::selection {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+/* Box shadows for light mode */
+.theme-light .card-elevated,
+.theme-light [class*="shadow"] {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ========================================
+   AGGRESSIVE LIGHT MODE OVERRIDES
+   ======================================== */
+
+/* Override ALL divs with dark inline styles */
+.theme-light div[style*="#0B1220"],
+.theme-light div[style*="#101B2D"],
+.theme-light div[style*="#111827"],
+.theme-light div[style*="#1a2332"],
+.theme-light div[style*="#162035"],
+.theme-light div[style*="rgb(11, 18, 32)"],
+.theme-light div[style*="rgb(16, 27, 45)"],
+.theme-light div[class*="bg-\\[\\#"] {
+  background-color: var(--background) !important;
+}
+
+/* All nested containers */
+.theme-light .rounded-xl,
+.theme-light .rounded-2xl,
+.theme-light .rounded-lg {
+  background-color: var(--background-surface) !important;
+  border-color: var(--border) !important;
+}
+
+/* Override via attribute selectors */
+.theme-light *[class*="bg-"][class*="slate"],
+.theme-light *[class*="bg-"][class*="gray"] {
+  background-color: var(--background-elevated) !important;
+}
+
+/* Form elements with inline hex colors */
+.theme-light input[style*="background"],
+.theme-light select[style*="background"],
+.theme-light textarea[style*="background"] {
+  background-color: var(--background-surface) !important;
+  color: var(--foreground) !important;
+}
+
+/* All buttons */
+.theme-light button {
+  color: var(--foreground) !important;
+}
+
+.theme-light button[class*="bg-slate"],
+.theme-light button[class*="bg-gray"] {
+  background-color: var(--background-elevated) !important;
+}
+
+/* Primary colored buttons should keep their colors */
+.theme-light button[class*="bg-cyan"],
+.theme-light button[class*="bg-violet"],
+.theme-light button[class*="bg-green"],
+.theme-light button[class*="bg-red"],
+.theme-light button[class*="bg-blue"],
+.theme-light button[class*="gradient"] {
+  color: white !important;
+}
+
+/* Labels and spans */
+.theme-light label,
+.theme-light span:not([class*="text-cyan"]):not([class*="text-green"]):not([class*="text-red"]):not([class*="text-amber"]):not([class*="text-violet"]) {
+  color: var(--foreground) !important;
+}
+
+/* Headers */
+.theme-light h1,
+.theme-light h2,
+.theme-light h3,
+.theme-light h4 {
+  color: var(--foreground) !important;
+}
+
+/* Paragraphs */
+.theme-light p {
+  color: var(--foreground-muted) !important;
+}
+
+/* All links except colored ones */
+.theme-light a:not([class*="text-cyan"]):not([class*="text-violet"]) {
+  color: var(--foreground) !important;
+}
+
+/* Ensure SVG icons are visible */
+.theme-light svg {
+  color: currentColor;
+}
+
+/* Override specific card patterns */
+.theme-light [class*="CardContent"],
+.theme-light [class*="CardHeader"] {
+  background-color: transparent !important;
+}
+
+/* Topbar and navigation */
+.theme-light [class*="topbar"],
+.theme-light header {
+  background-color: var(--background-surface) !important;
+  border-color: var(--border) !important;
+}
+
+/* Mobile navigation */
+.theme-light [class*="mobile-nav"],
+.theme-light [class*="MobileNav"] {
+  background-color: var(--background-surface) !important;
+}
+
+/* Combo boxes and selects */
+.theme-light [class*="combobox"],
+.theme-light [class*="Combobox"],
+.theme-light [class*="select"],
+.theme-light [class*="Select"] {
+  background-color: var(--background-surface) !important;
+  border-color: var(--border) !important;
+}
+
+/* All list items */
+.theme-light li {
+  color: var(--foreground) !important;
+}
+
+/* Ensure gradients on accents stay visible */
+.theme-light .bg-gradient-to-r,
+.theme-light .bg-gradient-to-br {
+  /* Keep gradients but ensure text is visible */
+}
+
+/* Override any remaining dark backgrounds on hover */
+.theme-light *:hover {
+  --tw-bg-opacity: 1;
 }

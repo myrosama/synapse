@@ -15,7 +15,7 @@ export function AppShell({ children }: AppShellProps) {
     const { collapsed } = useSidebar();
 
     return (
-        <div className="min-h-screen bg-[#0B1220]">
+        <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
             <Sidebar />
             <Topbar />
 

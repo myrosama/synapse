@@ -9,24 +9,63 @@ import {
     User,
     HelpCircle,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    Settings,
+    Moon,
+    Sun,
+    Sparkles,
+    Target,
+    Lightbulb,
+    Gamepad2,
+    Mic,
+    PenTool,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { SynapseLogo } from '@/components/ui/synapse-logo';
+import { RecitoLogo } from '@/components/ui/recito-logo';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/lib/store';
+import { useTheme, Theme } from '@/lib/theme';
 
 const navItems = [
     { href: '/app', icon: LayoutDashboard, label: 'Dashboard' },
     { href: '/app/learn', icon: GraduationCap, label: 'Learn' },
+    { href: '/app/testlar', icon: Target, label: 'Testlar' },
+    { href: '/app/vocab', icon: Gamepad2, label: 'Vocab Games' },
+    { href: '/app/grammar', icon: PenTool, label: 'Grammar' },
+    { href: '/app/speaking', icon: Mic, label: 'Speaking' },
+    { href: '/app/formulas', icon: Lightbulb, label: 'Formulas' },
     { href: '/app/library', icon: Library, label: 'Library' },
     { href: '/app/profile', icon: User, label: 'Profile' },
     { href: '/app/help', icon: HelpCircle, label: 'Help' },
+    { href: '/app/admin', icon: Settings, label: 'Admin' },
 ];
+
+const themeIcons: Record<Theme, typeof Moon> = {
+    dark: Moon,
+    light: Sun,
+    night: Sparkles,
+};
+
+const themeLabels: Record<Theme, string> = {
+    dark: 'Dark',
+    light: 'Light',
+    night: 'Night',
+};
+
+const themeOrder: Theme[] = ['dark', 'light', 'night'];
 
 export function Sidebar() {
     const pathname = usePathname();
     const { collapsed, toggle } = useSidebar();
+    const { theme, setTheme } = useTheme();
+
+    const cycleTheme = () => {
+        const currentIndex = themeOrder.indexOf(theme);
+        const nextIndex = (currentIndex + 1) % themeOrder.length;
+        setTheme(themeOrder[nextIndex]);
+    };
+
+    const ThemeIcon = themeIcons[theme];
 
     return (
         <aside
@@ -39,7 +78,7 @@ export function Sidebar() {
             {/* Logo */}
             <div className="flex h-16 items-center justify-between border-b border-white/8 px-4">
                 <Link href="/app" className="flex items-center">
-                    <SynapseLogo showText={!collapsed} size="md" />
+                    <RecitoLogo showText={!collapsed} size="md" />
                 </Link>
             </div>
 
@@ -67,8 +106,21 @@ export function Sidebar() {
                 })}
             </nav>
 
-            {/* Collapse toggle */}
-            <div className="absolute bottom-4 left-0 right-0 px-3">
+            {/* Bottom actions */}
+            <div className="absolute bottom-4 left-0 right-0 px-3 space-y-2">
+                {/* Theme toggle */}
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={cycleTheme}
+                    className={cn('w-full justify-center', collapsed ? 'px-2' : 'justify-start gap-3')}
+                    title={`Theme: ${themeLabels[theme]}`}
+                >
+                    <ThemeIcon className="h-4 w-4" />
+                    {!collapsed && <span>{themeLabels[theme]} Mode</span>}
+                </Button>
+
+                {/* Collapse toggle */}
                 <Button
                     variant="ghost"
                     size="sm"
@@ -88,3 +140,4 @@ export function Sidebar() {
         </aside>
     );
 }
+

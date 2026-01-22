@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Mail, Lock, User, Eye, EyeOff, Chrome, Apple, AlertCircle, Loader2 } from 'lucide-react';
-import { SynapseLogo } from '@/components/ui/synapse-logo';
+import { RecitoLogo } from '@/components/ui/recito-logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -84,7 +84,7 @@ export default function AuthPage() {
                 {/* Logo */}
                 <div className="text-center mb-8">
                     <Link href="/" className="inline-block">
-                        <SynapseLogo size="lg" />
+                        <RecitoLogo size="lg" />
                     </Link>
                     <p className="text-slate-400 mt-2">Learn by teaching it back</p>
                 </div>
